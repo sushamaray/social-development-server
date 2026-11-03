@@ -41,19 +41,21 @@ export async function createEvent(req, res) {
             eventType,
             imageURL,
             location,
-            date,
-            creatorEmail
+            date
         } = req.body;
+
+        // Get creator information from verified JWT
+        const creatorEmail = req.user.email;
+        const creatorId = req.user.id;
 
         // Validate required fields
         if (
-            !title ||
-            !description ||
-            !eventType ||
-            !imageURL ||
-            !location ||
-            !date ||
-            !creatorEmail
+            !title?.trim() ||
+            !description?.trim() ||
+            !eventType?.trim() ||
+            !imageURL?.trim() ||
+            !location?.trim() ||
+            !date
         ) {
             return res.status(400).json({
                 success: false,
@@ -78,13 +80,14 @@ export async function createEvent(req, res) {
         }
 
         const newEvent = {
-            title,
-            description,
-            eventType,
-            imageURL,
-            location,
+            title: title.trim(),
+            description: description.trim(),
+            eventType: eventType.trim(),
+            imageURL: imageURL.trim(),
+            location: location.trim(),
             date: eventDate,
             creatorEmail,
+            creatorId,
             createdAt: new Date(),
             joinedUsers: []
         };
@@ -108,4 +111,3 @@ export async function createEvent(req, res) {
         });
     }
 }
-

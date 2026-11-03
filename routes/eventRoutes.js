@@ -11,7 +11,7 @@ import {
 const router = express.Router();
 
 router.get('/upcoming', getUpcomingEvents);
-router.post('/', createEvent);
+router.post('/', verifyToken, createEvent);
 
 router.get('/protected-test', verifyToken, (req, res) => {
   res.status(200).json({
