@@ -26,15 +26,6 @@ router.patch('/:id', verifyToken, updateEvent);
 router.delete('/:id', verifyToken, deleteEvent);
 router.post('/:id/join', verifyToken, joinEvent);
 
-// Temporary JWT verification test route
-router.get('/protected-test', verifyToken, (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'JWT verified successfully!',
-        user: req.user,
-    });
-});
-
 // Public event details route
 router.get('/:id', getEventById);
 
