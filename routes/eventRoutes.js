@@ -3,15 +3,16 @@ import express from 'express';
 import { verifyToken } from '../middleware/verifyToken.js';
 
 import {
-    getUpcomingEvents,
-    getEventById,
-    createEvent,
-    getMyEvents,
-    updateEvent,
-    deleteEvent,
-    joinEvent,
-    getJoinedEvents
-} from '../controllers/eventController.js';
+  getUpcomingEvents,
+  getEventById,
+  getEventJoinStatus,
+  createEvent,
+  getMyEvents,
+  updateEvent,
+  deleteEvent,
+  joinEvent,
+  getJoinedEvents,
+} from "../controllers/eventController.js";
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.delete('/:id', verifyToken, deleteEvent);
 router.post('/:id/join', verifyToken, joinEvent);
 
 // Public event details route
+router.get("/:id/join-status", verifyToken, getEventJoinStatus);
 router.get('/:id', getEventById);
 
 export default router;
