@@ -2,18 +2,27 @@
 import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
+
 export async function getUpcomingEvents(req, res) {
     try {
         const db = getDB();
 
-        const events = await db
+        const filter = {
+            date: { $gt: new Date() }
+        };
+
+        const limit = Number(req.query.limit);
+
+        let query = db
             .collection('events')
-            .find({
-                date: { $gt: new Date() }
-            })
-            .sort({ date: 1 })
-            .limit(6)
-            .toArray();
+            .find(filter)
+            .sort({ date: 1 });
+
+        if (Number.isInteger(limit) && limit > 0) {
+            query = query.limit(limit);
+        }
+
+        const events = await query.toArray();
 
         res.status(200).json({
             success: true,
@@ -30,7 +39,6 @@ export async function getUpcomingEvents(req, res) {
         });
     }
 }
-
 
 export async function createEvent(req, res) {
     try {
@@ -377,3 +385,42 @@ export async function getJoinedEvents(req, res) {
     }
 }
 
+
+export async function getEventById(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid event ID'
+            });
+        }
+
+        const db = getDB();
+
+        const event = await db.collection('events').findOne({
+            _id: new ObjectId(id)
+        });
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            event
+        });
+
+    } catch (error) {
+        console.error('Error fetching event:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch event'
+        });
+    }
+}

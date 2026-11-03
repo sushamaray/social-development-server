@@ -1,10 +1,10 @@
 
 import express from 'express';
-
 import { verifyToken } from '../middleware/verifyToken.js';
 
 import {
     getUpcomingEvents,
+    getEventById,
     createEvent,
     getMyEvents,
     updateEvent,
@@ -15,18 +15,16 @@ import {
 
 const router = express.Router();
 
-// Public route
+// Public routes
 router.get('/upcoming', getUpcomingEvents);
 
 // Protected routes
 router.post('/', verifyToken, createEvent);
 router.get('/my-events', verifyToken, getMyEvents);
+router.get('/joined', verifyToken, getJoinedEvents);
 router.patch('/:id', verifyToken, updateEvent);
 router.delete('/:id', verifyToken, deleteEvent);
-
-// Joined Events routes
 router.post('/:id/join', verifyToken, joinEvent);
-router.get('/joined', verifyToken, getJoinedEvents);
 
 // Temporary JWT verification test route
 router.get('/protected-test', verifyToken, (req, res) => {
@@ -36,5 +34,8 @@ router.get('/protected-test', verifyToken, (req, res) => {
         user: req.user,
     });
 });
+
+// Public event details route
+router.get('/:id', getEventById);
 
 export default router;
