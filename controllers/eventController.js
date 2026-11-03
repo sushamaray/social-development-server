@@ -321,14 +321,7 @@ export async function joinEvent(req, res) {
             });
         }
 
-        if (event.joinedUsers?.includes(userId)) {
-            return res.status(409).json({
-                success: false,
-                message: 'You have already joined this event'
-            });
-        }
-
-        await db.collection('events').updateOne(
+        const result = await db.collection('events').updateOne(
             {
                 _id: new ObjectId(id),
                 date: { $gt: new Date() },
@@ -340,6 +333,31 @@ export async function joinEvent(req, res) {
                 }
             }
         );
+
+        if (result.modifiedCount === 0) {
+            const latestEvent = await db.collection('events').findOne({
+                _id: new ObjectId(id)
+            });
+
+            if (!latestEvent) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Event not found'
+                });
+            }
+
+            if (latestEvent.joinedUsers?.includes(userId)) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'You have already joined this event'
+                });
+            }
+
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot join an event that has already started'
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -355,7 +373,6 @@ export async function joinEvent(req, res) {
         });
     }
 }
-
 
 export async function getJoinedEvents(req, res) {
     try {
