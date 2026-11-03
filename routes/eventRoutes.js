@@ -8,7 +8,9 @@ import {
     createEvent,
     getMyEvents,
     updateEvent,
-    deleteEvent
+    deleteEvent,
+    joinEvent,
+    getJoinedEvents
 } from '../controllers/eventController.js';
 
 const router = express.Router();
@@ -21,6 +23,10 @@ router.post('/', verifyToken, createEvent);
 router.get('/my-events', verifyToken, getMyEvents);
 router.patch('/:id', verifyToken, updateEvent);
 router.delete('/:id', verifyToken, deleteEvent);
+
+// Joined Events routes
+router.post('/:id/join', verifyToken, joinEvent);
+router.get('/joined', verifyToken, getJoinedEvents);
 
 // Temporary JWT verification test route
 router.get('/protected-test', verifyToken, (req, res) => {

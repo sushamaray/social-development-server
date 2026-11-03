@@ -281,3 +281,99 @@ export async function deleteEvent(req, res) {
     }
 }
 
+
+export async function joinEvent(req, res) {
+    try {
+        const db = getDB();
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid event ID'
+            });
+        }
+
+        const event = await db.collection('events').findOne({
+            _id: new ObjectId(id)
+        });
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event not found'
+            });
+        }
+
+        if (event.date <= new Date()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot join an event that has already started'
+            });
+        }
+
+        if (event.joinedUsers?.includes(userId)) {
+            return res.status(409).json({
+                success: false,
+                message: 'You have already joined this event'
+            });
+        }
+
+        await db.collection('events').updateOne(
+            {
+                _id: new ObjectId(id),
+                date: { $gt: new Date() },
+                joinedUsers: { $ne: userId }
+            },
+            {
+                $addToSet: {
+                    joinedUsers: userId
+                }
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'You have successfully joined the event'
+        });
+
+    } catch (error) {
+        console.error('Error joining event:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Failed to join event'
+        });
+    }
+}
+
+
+export async function getJoinedEvents(req, res) {
+    try {
+        const db = getDB();
+
+        const events = await db
+            .collection('events')
+            .find({
+                joinedUsers: req.user.id
+            })
+            .sort({ date: 1 })
+            .toArray();
+
+        res.status(200).json({
+            success: true,
+            count: events.length,
+            events
+        });
+
+    } catch (error) {
+        console.error('Error fetching joined events:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch joined events'
+        });
+    }
+}
+
